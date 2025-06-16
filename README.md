@@ -1,2 +1,2 @@
 # Psicolobo
-Chatbot para Regular las Emociones
+Base de Conocimientos para Chatbot para Regular las Emociones
