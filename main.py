@@ -2,20 +2,16 @@ import spacy
 import pandas as pd
 from fuzzywuzzy import fuzz
 from collections import defaultdict
-import os # Importar para verificar la ruta del archivo
+
 
 # --- 0. Cargar la Base de Conocimiento (Diccionario de Emociones Mexicano) ---
-# Hemos cambiado la ruta para apuntar al nuevo archivo CSV corregido
+
 def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv'):
     """
     Carga el diccionario de emociones desde un archivo CSV.
     Retorna un DataFrame de pandas.
     """
-    # Verificar si el archivo existe para dar un error más claro si no
-    if not os.path.exists(ruta_csv):
-        print(f"Error: El archivo CSV no fue encontrado en la ruta '{ruta_csv}'.")
-        print("Por favor, verifica que el archivo 'emociones_corregido.csv' esté en la carpeta 'baseConocimientos'.")
-        return None
+   
 
     try:
         # --- MUY IMPORTANTE: Asegúrate de que 'sep=',' esté aquí, ya que el nuevo CSV usa comas. ---
@@ -33,10 +29,9 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv'):
         print("También, confirma que el 'sep=' en pd.read_csv coincide con el delimitador real de tu CSV.")
         return None
 
-# --- ESTA ES LA LÍNEA QUE DEFINE 'diccionario_emociones_df' ---
-# Cargar el diccionario al inicio (esto debe ejecutarse antes que cualquier uso de diccionario_emociones_df)
+# Cargar el diccionario al inicio 
 diccionario_emociones_df = cargar_diccionario_emociones()
-# --------------------------------------------------------------
+
 
 # Si el diccionario no se carga, el script no puede continuar
 if diccionario_emociones_df is None:
@@ -52,7 +47,7 @@ except OSError:
     print("Por favor, ejecuta: python -m spacy download es_core_news_sm")
     exit()
 
-# Definir palabras de negación en español (adaptadas para México)
+# Definir palabras de negación 
 PALABRAS_NEGACION = [
     "no", "nunca", "jamás", "ni", "tampoco", "nada", "nadie", "ninguno",
     "para nada", "ni madres", "ni de chiste", "para nada" # Regionalismos/coloquialismos
