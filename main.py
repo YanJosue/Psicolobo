@@ -39,7 +39,7 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
         print(f"Advertencia: Error al cargar EmoLex estandarizado desde '{ruta_emolex_csv}': {e}. Continuando solo con emociones_v2.csv.")
         return df_actual # Return only the main DataFrame if EmoLex has issues
 
- # ... dentro de cargar_diccionario_emociones ...
+
     if df_actual is not None and df_emolex is not None:
         df_actual['source_priority'] = 1 # Prioridad alta para tu léxico original
         df_emolex['source_priority'] = 2 # Prioridad más baja para EmoLex
@@ -50,8 +50,8 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
         df_temp_combined.sort_values(by='source_priority', inplace=True)
 
         # Eliminar duplicados, manteniendo la primera aparición (la de mayor prioridad)
-        # Crucial: Si tienes 'enojado' para IRA en v2 y 'enojado' para TRISTEZA en EmoLex,
-        # 'keep='first' debería mantener la de v2 (IRA).
+        
+        
         df_final = df_temp_combined.drop_duplicates(subset=['Termino_emocional'], keep='first') # Changed subset to only 'Termino_emocional'
 
         # Eliminar la columna temporal de prioridad
@@ -61,17 +61,16 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
         return df_final
     
     else:
-        # This case should ideally not be reached if previous error handling is correct,
-        # but as a fallback, return the non-None one if one loaded.
+        
         if df_actual is not None:
             return df_actual
         elif df_emolex is not None:
             return df_emolex
         else:
-            return None # Both are None, critical failure
+            return None 
 
 # Cargar el diccionario al inicio
-# Asegúrate de que 'baseConocimientos/emolex_es_estandarizado.csv' sea la ruta correcta
+
 diccionario_emociones_df = cargar_diccionario_emociones(ruta_emolex_csv='baseConocimientos/emolex_es_estandarizado.csv') #
 
 
@@ -161,7 +160,7 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
 
                     if is_negated_phrase and negacion_considerar_str == 'sí':
                         print(f"  -> Frase '{frase_dic}' ignorada debido a negación.")
-                        # No se marca matched_in_oracion como True si se ignora por negación
+                        
                     else:
                         conteo_emociones[emocion] += 1 #
                         terminos_encontrados_por_emocion[emocion].append(frase_dic) #
