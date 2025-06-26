@@ -14,31 +14,29 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
     df_actual = None
     df_emolex = None
 
-    # Try loading the main dictionary
+   
     try:
         df_actual = pd.read_csv(ruta_csv, encoding='utf-8', sep=',') #
         print(f"DEBUG: Nombres de columnas detectadas por pandas (emociones_v2): {df_actual.columns.tolist()}")
         print(f"Diccionario de emociones cargado exitosamente desde '{ruta_csv}'.")
     except FileNotFoundError:
         print(f"ERROR: Archivo principal de emociones '{ruta_csv}' NO ENCONTRADO. No se puede continuar.")
-        return None # Critical error, return None
+        return None 
     except Exception as e:
         print(f"ERROR: Error al cargar el archivo principal de emociones '{ruta_csv}': {e}")
         print("Asegúrate de que el CSV esté bien formado y con la codificación correcta (UTF-8).")
-        return None # Critical error, return None
+        return None 
 
-    # Try loading the EmoLex dictionary
     try:
-        df_emolex = pd.read_csv(ruta_emolex_csv, encoding='utf-8', sep=',') #
+        df_emolex = pd.read_csv(ruta_emolex_csv, encoding='utf-8', sep=',') 
         print(f"DEBUG: Nombres de columnas detectadas por pandas (EmoLex estandarizado): {df_emolex.columns.tolist()}")
         print(f"Léxico EmoLex estandarizado cargado exitosamente desde '{ruta_emolex_csv}'.")
     except FileNotFoundError:
         print(f"Advertencia: No se encontró el archivo EmoLex estandarizado en '{ruta_emolex_csv}'. Continuando solo con emociones_v2.csv.")
-        return df_actual # Return only the main DataFrame if EmoLex is not found
+        return df_actual 
     except Exception as e:
         print(f"Advertencia: Error al cargar EmoLex estandarizado desde '{ruta_emolex_csv}': {e}. Continuando solo con emociones_v2.csv.")
-        return df_actual # Return only the main DataFrame if EmoLex has issues
-
+        return df_actual 
 
     if df_actual is not None and df_emolex is not None:
         df_actual['source_priority'] = 1 # Prioridad alta para tu léxico original
@@ -50,8 +48,7 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
         df_temp_combined.sort_values(by='source_priority', inplace=True)
 
         # Eliminar duplicados, manteniendo la primera aparición (la de mayor prioridad)
-        
-        
+
         df_final = df_temp_combined.drop_duplicates(subset=['Termino_emocional'], keep='first') # Changed subset to only 'Termino_emocional'
 
         # Eliminar la columna temporal de prioridad
@@ -61,16 +58,14 @@ def cargar_diccionario_emociones(ruta_csv='baseConocimientos/emociones_v2.csv', 
         return df_final
     
     else:
-        
         if df_actual is not None:
             return df_actual
         elif df_emolex is not None:
             return df_emolex
         else:
-            return None 
+            return None # Both are None, critical failure
 
 # Cargar el diccionario al inicio
-
 diccionario_emociones_df = cargar_diccionario_emociones(ruta_emolex_csv='baseConocimientos/emolex_es_estandarizado.csv') #
 
 
@@ -120,8 +115,8 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
         matched_in_oracion = False # Bandera para saber si se encontró algo significativo en esta oración
 
         # --- Lógica de Detección de Frases (Multi-Word Expressions) ---
+        
         # Prioridad alta para evitar coincidencias parciales con palabras individuales
-
         # Obtener todas las frases y sinónimos multi-palabra del diccionario
         dic_frases_raw = diccionario_df[diccionario_df['Termino_emocional'].str.contains(' ', na=False)]['Termino_emocional'].apply(lambda x: str(x).lower()).tolist()
 
@@ -143,7 +138,7 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
                 is_negated_phrase = False
                 phrase_start_index = oracion_lower.find(frase_dic)
                 if phrase_start_index > 0:
-                    context_before_phrase = oracion_lower[max(0, phrase_start_index - 15):phrase_start_index].split() # Más contexto
+                    context_before_phrase = oracion_lower[max(0, phrase_start_index - 15):phrase_start_index].split() 
                     if any(neg_word in context_before_phrase for neg_word in PALABRAS_NEGACION): #
                         is_negated_phrase = True
 
@@ -160,7 +155,7 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
 
                     if is_negated_phrase and negacion_considerar_str == 'sí':
                         print(f"  -> Frase '{frase_dic}' ignorada debido a negación.")
-                        
+                        # No se marca matched_in_oracion como True si se ignora por negación
                     else:
                         conteo_emociones[emocion] += 1 #
                         terminos_encontrados_por_emocion[emocion].append(frase_dic) #
@@ -181,7 +176,7 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
 
             print(f"Tokens procesados (lemas) en la oración '{oracion}': {[t['lemma'] for t in processed_tokens]}")
 
-            # --- Lógica de Negación (revisada) para tokens individuales ---
+            # --- Lógica de Negación para tokens individuales ---
             for i, p_token in enumerate(processed_tokens):
                 token_obj = p_token['spacy_token_obj']
                 start_idx = max(0, token_obj.i - 3)
@@ -198,12 +193,12 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
 
                 for idx, row in diccionario_df.iterrows():
                     termino_emocional_dic = str(row['Termino_emocional']).lower()
-                    lista_sinonimos_dic = str(row['Lista_sinonimos']).lower().split(', ') #
+                    lista_sinonimos_dic = str(row['Lista_sinonimos']).lower().split(', ') 
                     emocion = str(row['Emocion']).lower()
-                    negacion_considerar_str = str(row['Negacion_Considerar']).lower() #
+                    negacion_considerar_str = str(row['Negacion_Considerar']).lower() 
 
                     if p_token['is_negated'] and negacion_considerar_str == 'sí':
-                        continue #
+                        continue 
 
                     # Prioridad 1: Coincidencia exacta con el término emocional del diccionario
                     if token_lemma == termino_emocional_dic:
@@ -229,15 +224,15 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
 
                     # Prioridad 4: Coincidencia difusa con algún sinónimo
                     for sinonimo_dic in lista_sinonimos_dic:
-                        if sinonimo_dic: # Check if synonym is not an empty string
-                            similitud_sinonimo = fuzz.ratio(token_lemma, sinonimo_dic) #
-                            if similitud_sinonimo >= umbral_difuso: #
-                                conteo_emociones[emocion] += 1 #
+                        if sinonimo_dic: 
+                            similitud_sinonimo = fuzz.ratio(token_lemma, sinonimo_dic) 
+                            if similitud_sinonimo >= umbral_difuso: 
+                                conteo_emociones[emocion] += 1 
                                 terminos_encontrados_por_emocion[emocion].append(token_original_text) #
-                                print(f"  -> Coincidencia DIFUSA (sinónimo, {similitud_sinonimo}%): '{token_lemma}' ('{token_original_text}') con sinónimo '{sinonimo_dic}' de '{termino_emocional_dic}' -> {emocion}") #
-                                break #
-                    else: #
-                        continue #
+                                print(f"  -> Coincidencia DIFUSA (sinónimo, {similitud_sinonimo}%): '{token_lemma}' ('{token_original_text}') con sinónimo '{sinonimo_dic}' de '{termino_emocional_dic}' -> {emocion}") 
+                                break 
+                    else: 
+                        continue 
 
 
     # 6. Voting
@@ -248,15 +243,15 @@ def detectar_emocion(texto_usuario: str, diccionario_df: pd.DataFrame, umbral_di
         max_conteo = conteo_emociones[emocion_detectada]
         # Verificar si hay empate
         if list(conteo_emociones.values()).count(max_conteo) > 1:
-            emocion_detectada = "EMPATE" # O podrías devolver una lista de emociones empatadas
+            emocion_detectada = "EMPATE" 
 
-    # --- ADD THESE DEBUG PRINTS ---
+
     print(f"DEBUG: emocion_detectada type: {type(emocion_detectada)}, value: {emocion_detectada}")
     print(f"DEBUG: conteos type: {type(conteo_emociones)}, value: {dict(conteo_emociones)}")
     print(f"DEBUG: terminos_encontrados type: {type(terminos_encontrados_por_emocion)}, value: {dict(terminos_encontrados_por_emocion)}")
-    # --- END DEBUG PRINTS ---
 
-    return emocion_detectada, conteo_emociones, terminos_encontrados_por_emocion # Corrected return statement
+
+    return emocion_detectada, conteo_emociones, terminos_encontrados_por_emocion 
 
 # --- Ejemplos de Uso ---
 if __name__ == "__main__":
@@ -264,10 +259,8 @@ if __name__ == "__main__":
 
     # Ejemplos de entrada de usuario
     ejemplos_texto = [
-        "Me siento muy agüitado hoy. No sé qué hacer con esta tristeza.",
-        "Estoy bien enojado, me sacó de onda lo que pasó. ¡Me hierve la sangre!",
-        "Ando con el Jesús en la boca, me paniqueé con el susto. No siento miedo.", # "No siento miedo" para probar negación
-        "Tengo un cargo de conciencia horrible.", # Prueba de nueva emoción
+       "Me hiciron una acusación falsa, no se que hacer",
+       "Me siento muy sad hoy, que hago?"
 
     ]
 
